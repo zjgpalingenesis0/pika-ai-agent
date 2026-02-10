@@ -1,0 +1,23 @@
+{
+  "mcpServers": {
+    "time": {
+      "command": "uvx",
+      "args": [
+        "mcp-server-time",
+        "--local-timezone=Asia/Shanghai"
+      ]
+    },
+    "pika-mcp-image-search": {
+      "command": "java",
+      "args": [
+        "-Dspring.ai.mcp.server.stdio=true",
+        "-Dspring.main.web-application-type=none",
+        "-Dlogging.pattern.console=",
+        "-jar",
+        "pika-mcp-image-search/target/pika-mcp-image-search-0.0.1-SNAPSHOT.jar"
+      ],
+      "env": {}
+    }
+  }
+}
+
