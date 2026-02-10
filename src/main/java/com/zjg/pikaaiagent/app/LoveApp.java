@@ -17,9 +17,13 @@ import org.springframework.ai.chat.memory.InMemoryChatMemory;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.rag.preretrieval.query.transformation.QueryTransformer;
+import org.springframework.ai.tool.ToolCallback;
+import org.springframework.ai.tool.ToolCallbackProvider;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+import reactor.core.publisher.Flux;
 
 import java.util.List;
 
@@ -49,6 +53,12 @@ public class LoveApp {
 
     @Resource
     private QueryRewriter queryRewriter;
+
+    @Resource
+    private ToolCallback[] allTools;
+
+    @Resource
+    private ToolCallbackProvider toolCallbackProvider;
 
     /**
      * 初始化AI 客户端
@@ -95,6 +105,31 @@ public class LoveApp {
         log.info("content:{}", content);
         return content;
     }
+
+    /**
+     * 流式调用
+     * @param message
+     * @param chatId
+     * @return
+     */
+    public Flux<String> doChatByStream(String message, String chatId) {
+
+        //返回content
+        Flux<String> content = chatClient
+                .prompt()  // 启动构建器
+                .user(message)   // 用户输入
+                .advisors(advisor ->     // 记忆顾问
+                        advisor.param(CHAT_MEMORY_CONVERSATION_ID_KEY, chatId)
+                                .param(CHAT_MEMORY_RETRIEVE_SIZE_KEY, 10)
+                )
+                .stream()
+                .content();// 执行调用
+
+
+        log.info("content:{}", content);
+        return content;
+    }
+
 
     record LoveReport(String title, List<String> suggestions) {
 
@@ -161,4 +196,53 @@ public class LoveApp {
         log.info("content: {}", content);
         return content;
     }
+
+    /**
+     *  AI恋爱报告+支持调用工具
+     * @param message
+     * @param chatId
+     * @return
+     */
+    public String doChatWithTools(String message, String chatId) {
+
+         ChatResponse chatResponse = chatClient
+                .prompt()  // 启动构建器
+                .user(message)   // 用户输入
+                .advisors(advisor ->     // 记忆顾问
+                        advisor.param(CHAT_MEMORY_CONVERSATION_ID_KEY, chatId)
+                                .param(CHAT_MEMORY_RETRIEVE_SIZE_KEY, 10)
+                )
+                 .advisors(new MyLoggerAdvisor())
+                 .tools(allTools)
+                 .call()
+                 .chatResponse();// 执行调用
+        String content = chatResponse.getResult().getOutput().getText();
+        log.info("loveReport: {}", content);
+        return content;
+    }
+
+    /**
+     * 调用MCP
+     * @param message
+     * @param chatId
+     * @return
+     */
+    public String doChatWithMCP(String message, String chatId) {
+
+        ChatResponse chatResponse = chatClient
+                .prompt()  // 启动构建器
+                .user(message)   // 用户输入
+                .advisors(advisor ->     // 记忆顾问
+                        advisor.param(CHAT_MEMORY_CONVERSATION_ID_KEY, chatId)
+                                .param(CHAT_MEMORY_RETRIEVE_SIZE_KEY, 10)
+                )
+                .advisors(new MyLoggerAdvisor())
+                .tools(toolCallbackProvider)
+                .call()
+                .chatResponse();// 执行调用
+        String content = chatResponse.getResult().getOutput().getText();
+        log.info("content: {}", content);
+        return content;
+    }
+
 }

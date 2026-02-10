@@ -10,12 +10,22 @@ spring:
         dimensions: 1536    # 嵌入维度
         distance-type: COSINE_DISTANCE
         max-document-batch-size: 10000 # Optional: Maximum number of documents per batch
+    mcp:
+      client:
+        stdio:
+          servers-configuration: classpath:mcp-servers.json
+#        sse:
+#          connections:
+#            server1:
+#              url: http://localhost:8127
+
 server:
   port: 8123
   servlet:
     context-path: /api
 # springdoc-openapi????
 springdoc:
+  default-flat-param-object: true
   swagger-ui:
     path: /swagger-ui.html
     tags-sorter: alpha
