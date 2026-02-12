@@ -45,7 +45,7 @@ public abstract class BaseAgent {
      * 最大步骤数
      */
     private int currentStep = 0;
-    private int maxSteps = 5;
+    private int maxSteps = 10;
     /**
      * LLM大模型
      */
@@ -141,9 +141,19 @@ public abstract class BaseAgent {
                         log.info("Executing step: " + currentStep + "/" + maxSteps);
                         //单步执行
                         String resultStep = step();
-                        String result = "Step" + currentStep + ": " + resultStep;
-                        //发送每一步的结果
-                        sseEmitter.send(result);
+
+                        // 如果是ToolCallAgent，发送AI的实际回答而不是步骤描述
+                        if (this instanceof ToolCallAgent toolCallAgent) {
+                            String aiResponse = toolCallAgent.getAiResponseText();
+                            if (aiResponse != null && !aiResponse.isEmpty()) {
+                                // 发送AI的实际回答给前端
+                                sseEmitter.send(aiResponse);
+                            }
+                        } else {
+                            // 非ToolCallAgent，保持原有的步骤发送方式
+                            String result = "Step" + currentStep + ": " + resultStep;
+                            sseEmitter.send(result);
+                        }
                     }
                     //检查是否超出步骤限制
                     if (currentStep >= maxSteps) {

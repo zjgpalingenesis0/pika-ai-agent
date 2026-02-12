@@ -27,7 +27,7 @@ public class PikaManus extends ToolCallAgent {
                 If you want to stop the interaction at any point, use the `terminate` tool/function call.  
                 """;
         setNextStepPrompt(NEXT_STEP_PROMPT);
-        setMaxSteps(5);
+        setMaxSteps(10);
         ChatClient chatClient = ChatClient.builder(dashscopeChatModel)
                 .defaultAdvisors(new MyLoggerAdvisor())
                 .build();

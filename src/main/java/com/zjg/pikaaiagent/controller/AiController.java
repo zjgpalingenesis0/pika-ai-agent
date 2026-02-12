@@ -92,21 +92,8 @@ public class AiController {
      */
     @GetMapping("agent/love_app")
     public SseEmitter doChatWithManus(String messages) {
-        // 创建带 RAG 的 ChatClient
-        ChatClient chatClient = ChatClient.builder(dashscopeChatModel)
-                .defaultSystem("""
-                        You are PikaManus, an all-capable AI assistant aimed at solving any task presented by the user.
-                        You have access to a comprehensive knowledge base covering relationships, career development, mental health, financial planning, and interpersonal skills.
-                        When answering questions, always prioritize information from the knowledge base when available.
-                        """)
-                .defaultAdvisors(
-                        new QuestionAnswerAdvisor(pgVectorStore)  // 启用 RAG
-                )
-                .build();
 
         PikaManus pikaManus = new PikaManus(allTools, dashscopeChatModel);
-        // 注入带 RAG 的 chatClient
-        pikaManus.setChatClient(chatClient);
 
         return pikaManus.runStream(messages);
     }

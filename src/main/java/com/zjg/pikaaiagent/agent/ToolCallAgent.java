@@ -40,6 +40,10 @@ public class ToolCallAgent extends ReActAgent{
      */
     private ChatResponse toolCallChatResponse;
     /**
+     * 保存AI的实际回答内容
+     */
+    private String aiResponseText;
+    /**
      * 工具调用管理者
      */
     private final ToolCallingManager toolCallingManager;
@@ -86,6 +90,7 @@ public class ToolCallAgent extends ReActAgent{
             List<AssistantMessage.ToolCall> toolCalls = assistantMessage.getToolCalls();
             //输出显示信息
             String text = assistantMessage.getText();
+            this.aiResponseText = text;  // 保存AI的实际回答
             log.info(getName() + "的思考：" + text);
             log.info(toolCalls.size() + "个工具被使用");
             String toolCallInfo = toolCalls.stream()
