@@ -20,7 +20,7 @@
         </div>
         <nav class="app-nav">
           <router-link to="/" class="nav-link">主页</router-link>
-          <router-link to="/love-app" class="nav-link">AI恋爱大师</router-link>
+          <router-link to="/love-app" class="nav-link">AI人生问题解决专家</router-link>
           <router-link to="/super-agent" class="nav-link">AI超级智能体</router-link>
         </nav>
       </div>

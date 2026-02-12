@@ -10,8 +10,8 @@
         <div class="card-icon">
           <img src="@/assets/images/love-ai-avatar.svg" alt="AI恋爱大师" class="ai-avatar" />
         </div>
-        <h2>AI恋爱大师</h2>
-        <p>体验浪漫的AI恋爱对话，让AI成为你的恋爱顾问</p>
+        <h2>AI人生问题解决专家</h2>
+        <p>AI人生助手 - 全方位解决您的人生困惑</p>
       </div>
       
       <div class="app-card" @click="navigateTo('/super-agent')">

@@ -3,8 +3,11 @@ package com.zjg.pikaaiagent.controller;
 import com.zjg.pikaaiagent.agent.PikaManus;
 import com.zjg.pikaaiagent.app.LoveApp;
 import jakarta.annotation.Resource;
+import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.client.advisor.QuestionAnswerAdvisor;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.tool.ToolCallback;
+import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,6 +29,9 @@ public class AiController {
 
     @Resource
     private ChatModel dashscopeChatModel;
+
+    @Resource
+    private VectorStore pgVectorStore;
 
     /**
      * 同步调用AI恋爱大师应用
@@ -86,7 +92,22 @@ public class AiController {
      */
     @GetMapping("agent/love_app")
     public SseEmitter doChatWithManus(String messages) {
+        // 创建带 RAG 的 ChatClient
+        ChatClient chatClient = ChatClient.builder(dashscopeChatModel)
+                .defaultSystem("""
+                        You are PikaManus, an all-capable AI assistant aimed at solving any task presented by the user.
+                        You have access to a comprehensive knowledge base covering relationships, career development, mental health, financial planning, and interpersonal skills.
+                        When answering questions, always prioritize information from the knowledge base when available.
+                        """)
+                .defaultAdvisors(
+                        new QuestionAnswerAdvisor(pgVectorStore)  // 启用 RAG
+                )
+                .build();
+
         PikaManus pikaManus = new PikaManus(allTools, dashscopeChatModel);
+        // 注入带 RAG 的 chatClient
+        pikaManus.setChatClient(chatClient);
+
         return pikaManus.runStream(messages);
     }
 

@@ -37,10 +37,19 @@ public class LoveApp {
 
     private final ChatClient chatClient;
 
-    private final static String SYSTEM_PROMPT = "扮演深耕恋爱心理领域的专家。开场向用户表明身份，" +
-            "告知用户可倾诉恋爱难题。围绕单身、恋爱、已婚三种状态提问：单身状态询问社交圈拓展及追求心仪对象的困扰；" +
-            "恋爱状态询问沟通、习惯差异引发的矛盾；已婚状态询问家庭责任与亲属关系处理的问题。" +
-            "引导用户详述事情经过、对方反应及自身想法，以便给出专属解决方案。";
+//    private final static String SYSTEM_PROMPT = "扮演深耕恋爱心理领域的专家。开场向用户表明身份，" +
+//            "告知用户可倾诉恋爱难题。围绕单身、恋爱、已婚三种状态提问：单身状态询问社交圈拓展及追求心仪对象的困扰；" +
+//            "恋爱状态询问沟通、习惯差异引发的矛盾；已婚状态询问家庭责任与亲属关系处理的问题。" +
+//            "引导用户详述事情经过、对方反应及自身想法，以便给出专属解决方案。";
+
+    private final static String SYSTEM_PROMPT = "扮演一位专业的人生问题解决专家，致力于帮助人们解决生活中的各类困惑。" +
+            "开场向用户表明身份，告知用户可以倾诉任何生活难题。你的专业领域包括：" +
+            "1. 情感咨询：单身、恋爱、已婚等亲密关系问题；" +
+            "2. 职业发展：职场新人、职业规划、面试技巧等职业困惑；" +
+            "3. 心理健康：压力管理、情绪调节、自信建立等心理问题；" +
+            "4. 人际关系：社交技巧、沟通艺术、冲突解决等人际交往难题；" +
+            "5. 理财规划：消费观念、储蓄投资、财务管理等理财困惑。" +
+            "引导用户详述问题背景、具体困扰和期望目标，以便给出专业、实用的解决方案。";
 
     @Resource
     private VectorStore loveAppVectorStore;
@@ -62,7 +71,7 @@ public class LoveApp {
 
     /**
      * 初始化AI 客户端
-     * @param zhiPuAiChatModel  选用对话模型
+     * @param dashscopeChatModel  选用对话模型
      */
     public LoveApp(ChatModel dashscopeChatModel) {
         // 初始化自定义的基于文件的对话记忆(项目根目录下的，chat-memory目录)
@@ -122,6 +131,8 @@ public class LoveApp {
                         advisor.param(CHAT_MEMORY_CONVERSATION_ID_KEY, chatId)
                                 .param(CHAT_MEMORY_RETRIEVE_SIZE_KEY, 10)
                 )
+//                .advisors(new QuestionAnswerAdvisor(loveAppVectorStore))
+                .advisors(new QuestionAnswerAdvisor(pgVectorVectorStore))
                 .stream()
                 .content();// 执行调用
 

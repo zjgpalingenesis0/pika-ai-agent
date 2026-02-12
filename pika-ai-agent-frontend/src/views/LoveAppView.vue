@@ -4,7 +4,7 @@
       <div class="ai-info">
         <img src="@/assets/images/love-ai-avatar.svg" alt="AI恋爱大师" class="ai-avatar" />
         <div class="ai-details">
-          <h2>AI恋爱大师</h2>
+          <h2>AI人生问题解决专家</h2>
           <p>聊天室ID: {{ chatId }}</p>
         </div>
       </div>
