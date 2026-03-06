@@ -5,6 +5,7 @@ import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.tool.ToolCallback;
 import org.springframework.stereotype.Component;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 /**
  * AI超级智能体，拥有自主规划能力，可直接使用
@@ -12,7 +13,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class PikaManus extends ToolCallAgent {
 
-    public PikaManus(ToolCallback[] allTools, ChatModel dashscopeChatModel) {
+    public PikaManus(ToolCallback[] allTools, @Qualifier("dashScopeChatModel") ChatModel dashscopeChatModel) {
         super(allTools);
         setName("PikaManus");
         String SYSTEM_PROMPT = """  

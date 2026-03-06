@@ -8,19 +8,24 @@ import com.zjg.pikaaiagent.rag.QueryRewriter;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
+
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
+
 import org.springframework.ai.chat.client.advisor.QuestionAnswerAdvisor;
 import org.springframework.ai.chat.client.advisor.SimpleLoggerAdvisor;
 import org.springframework.ai.chat.client.advisor.api.Advisor;
-import org.springframework.ai.chat.memory.ChatMemory;
-import org.springframework.ai.chat.memory.InMemoryChatMemory;
+
+
+import org.springframework.ai.chat.memory.*;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.rag.preretrieval.query.transformation.QueryTransformer;
 import org.springframework.ai.tool.ToolCallback;
 import org.springframework.ai.tool.ToolCallbackProvider;
+
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import reactor.core.publisher.Flux;
@@ -66,19 +71,27 @@ public class LoveApp {
     @Resource
     private ToolCallback[] allTools;
 
-    @Resource
+//    @Resource
     private ToolCallbackProvider toolCallbackProvider;
 
     /**
      * 初始化AI 客户端
      * @param dashscopeChatModel  选用对话模型
      */
-    public LoveApp(ChatModel dashscopeChatModel) {
+    public LoveApp(@Qualifier("dashScopeChatModel") ChatModel dashscopeChatModel) {
         // 初始化自定义的基于文件的对话记忆(项目根目录下的，chat-memory目录)
 //        String fileDir = System.getProperty("user.dir") + "/tmp/chat-memory";
-        //ChatMemory  chatMemory = new FileBasedChatMemory(fileDir);
+//        ChatMemory chatMemory = new FileBasedChatMemory(fileDir);
         // 初始化基于内存的对话记忆。
-        ChatMemory chatMemory = new InMemoryChatMemory();
+//        ChatMemory chatMemory = new InMemoryChatMemory();
+        // 1. 先创建内存仓库
+        InMemoryChatMemoryRepository repository = new InMemoryChatMemoryRepository();
+
+        // 2. 再创建 ChatMemory
+        ChatMemory chatMemory = MessageWindowChatMemory.builder()
+                .chatMemoryRepository(repository)
+                .maxMessages(10)   // 最多保留20条消息
+                .build();
 
         chatClient = ChatClient.builder(dashscopeChatModel)
                 .defaultSystem(SYSTEM_PROMPT)
@@ -131,6 +144,7 @@ public class LoveApp {
                         advisor.param(CHAT_MEMORY_CONVERSATION_ID_KEY, chatId)
                                 .param(CHAT_MEMORY_RETRIEVE_SIZE_KEY, 10)
                 )
+                .advisors(new MyLoggerAdvisor())
 //                .advisors(new QuestionAnswerAdvisor(loveAppVectorStore))
                 .advisors(new QuestionAnswerAdvisor(pgVectorVectorStore))
                 .stream()
@@ -194,13 +208,13 @@ public class LoveApp {
                 //应用RAG云知识库，检索增强服务
 //                .advisors(loveAppRagCloudAdvisor)
                 //应用RAG检索增强服务（基于PgVector向量存储）
-//                .advisors(new QuestionAnswerAdvisor(pgVectorVectorStore))
+                .advisors(new QuestionAnswerAdvisor(pgVectorVectorStore))
 
                 //应用自定义RAG检索增强服务（文档查询器+上下文增强）
-                .advisors(
-                        LoveAppRagCustomAdvisorFactory
-                            .createLoveAppRagCustomAdvisor(loveAppVectorStore, "已婚")
-                )
+//                .advisors(
+//                        LoveAppRagCustomAdvisorFactory
+//                            .createLoveAppRagCustomAdvisor(loveAppVectorStore, "已婚")
+//                )
                 .call()
                 .chatResponse();// 执行调用
         String content = chatResponse.getResult().getOutput().getText();

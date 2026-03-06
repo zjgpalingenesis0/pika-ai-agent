@@ -80,22 +80,29 @@ public class FileBasedChatMemory implements ChatMemory {
     }
 
     /**
-     * 查询消息列表中最后n条
-     * @param conversationId
-     * @param lastN
-     * @return
+     * 获取指定会话的所有消息
+     * @param conversationId 会话ID
+     * @return 消息列表
      */
     @Override
-    public List<Message> get(String conversationId, int lastN) {
-        if (conversationId == null || lastN <= 0) {
+    public List<Message> get(String conversationId) {
+        if (conversationId == null) {
             return new ArrayList<>();
         }
-        List<Message> messages = getOrCreateConversation(conversationId);
-
-        return messages.stream()
-                .skip(Math.max(0, messages.size() - lastN))
-                .toList();
+        return getOrCreateConversation(conversationId);
     }
+
+//    @Override
+//    public List<Message> get(String conversationId, int lastN) {
+//        if (conversationId == null || lastN <= 0) {
+//            return new ArrayList<>();
+//        }
+//        List<Message> messages = getOrCreateConversation(conversationId);
+//
+//        return messages.stream()
+//                .skip(Math.max(0, messages.size() - lastN))
+//                .toList();
+//    }
 
     /**
      * 删除会话在的文件夹

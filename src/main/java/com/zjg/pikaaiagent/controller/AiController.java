@@ -34,6 +34,12 @@ public class AiController {
     private VectorStore pgVectorStore;
 
     /**
+     * 注入 PikaManus Bean
+     */
+    @Resource
+    private PikaManus pikaManus;
+
+    /**
      * 同步调用AI恋爱大师应用
      * @param message
      * @param chatId
@@ -87,14 +93,12 @@ public class AiController {
     }
 
     /**
-     * 流式调用超级智能体
+     * 流式调用超级智能体（支持 Skill）
      * @return
      */
     @GetMapping("agent/love_app")
     public SseEmitter doChatWithManus(String messages) {
-
-        PikaManus pikaManus = new PikaManus(allTools, dashscopeChatModel);
-
+        // 使用注入的 PikaManus Bean，已配置好 Skill 组件
         return pikaManus.runStream(messages);
     }
 
